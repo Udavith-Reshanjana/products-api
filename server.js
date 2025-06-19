@@ -13,8 +13,6 @@ app.use(cors({
     origin: '*'
 }));
 
-
-
 // Start server
 app.listen(HTTP_PORT, () => {
     console.log("Server running on port %PORT%".replace("%PORT%", HTTP_PORT))
@@ -37,7 +35,6 @@ app.get("/api/products", (req, res, next) => {
     } catch (E) {
         res.status(400).send(E);
     }
-
 });
 
 app.get("/api/products/:id", (req, res, next) => {
@@ -90,12 +87,10 @@ app.get("/api/products/unitPrice/:unitPrice", (req, res, next) => {
                 return;
             } else {
                 res.json({
-
                     "message": "success",
                     "data": row
                 })
             }
-
         });
     } catch (E) {
         res.status(400).send(E);
@@ -103,14 +98,11 @@ app.get("/api/products/unitPrice/:unitPrice", (req, res, next) => {
 });
 
 app.post("/api/products/", (req, res, next) => {
-
     try {
         var errors = []
-
         if (!req.body) {
             errors.push("An invalid input");
         }
-
         const { productName,
             description,
             category,
@@ -122,11 +114,9 @@ app.post("/api/products/", (req, res, next) => {
             quantity,
             createdDate
         } = req.body;
-
         var sql = 'INSERT INTO products (productName, description, category, brand, expiredDate, manufacturedDate, batchNumber, unitPrice, quantity, createdDate) VALUES (?,?,?,?,?,?,?,?,?,?)'
         var params = [productName, description, category, brand, expiredDate, manufacturedDate, batchNumber, unitPrice, quantity, createdDate]
         db.run(sql, params, function (err, result) {
-
             if (err) {
                 res.status(400).json({ "error": err.message })
                 return;
@@ -137,17 +127,13 @@ app.post("/api/products/", (req, res, next) => {
                     "id": this.lastID
                 })
             }
-
         });
     } catch (E) {
         res.status(400).send(E);
     }
 });
 
-
 app.put("/api/products/", (req, res, next) => {
-
-
     const {
         id,
         productName,
@@ -172,7 +158,6 @@ app.put("/api/products/", (req, res, next) => {
             res.status(200).json({ updated: this.changes });
         });
 });
-
 
 app.delete("/api/products/delete/:id", (req, res, next) => {
     try {
@@ -208,7 +193,6 @@ app.delete("/api/products/deleteAll/:id", (req, res, next) => {
     }
 });
 
-
 app.get("/api/suppliers/", (req, res, next) => {
     try {
         var sql = "select * from suppliers"
@@ -226,19 +210,14 @@ app.get("/api/suppliers/", (req, res, next) => {
     } catch (E) {
         res.status(400).send(E);
     }
-
 });
 
-
 app.post("/api/suppliers/", (req, res, next) => {
-
     try {
         var errors = []
-
         if (!req.body) {
             errors.push("An invalid input");
         }
-
         const { supplierName,
             address,
             joinedDate,
@@ -248,7 +227,6 @@ app.post("/api/suppliers/", (req, res, next) => {
         var sql = 'INSERT INTO suppliers (supplierName, address, joinedDate, mobileNo) VALUES (?,?,?,?)'
         var params = [supplierName, address, joinedDate, mobileNo]
         db.run(sql, params, function (err, result) {
-
             if (err) {
                 res.status(400).json({ "error": err.message })
                 return;
@@ -259,7 +237,6 @@ app.post("/api/suppliers/", (req, res, next) => {
                     "id": this.lastID
                 })
             }
-
         });
     } catch (E) {
         res.status(400).send(E);
@@ -283,8 +260,45 @@ app.delete("/api/suppliers/deleteAll/:id", (req, res, next) => {
     }
 });
 
-
 // Root path
 app.get("/", (req, res, next) => {
     res.json({ "message": "University of Moratuwa" })
+});
+
+
+// ----------------------------------------------------
+// APPENDED API: Customer Registration
+// ----------------------------------------------------
+app.post("/api/customers/register", (req, res) => {
+    const { name, email, creditCard } = req.body;
+
+    if (!name || !email || !creditCard) {
+        return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    const isValidCreditCard = /^\d{12}$/.test(creditCard);
+
+    if (!isValidEmail) {
+        return res.status(400).json({ error: "Invalid email address" });
+    }
+
+    if (!isValidCreditCard) {
+        return res.status(400).json({ error: "Credit card must be 12 digits" });
+    }
+
+    const sql = `INSERT INTO customer (name, email, creditCard) VALUES (?, ?, ?)`;
+    const params = [name, email, creditCard];
+
+    db.run(sql, params, function (err) {
+        if (err) {
+            return res.status(400).json({ error: "Registration failed. Email may already exist." });
+        }
+
+        res.status(201).json({
+            customerId: this.lastID,
+            name,
+            email
+        });
+    });
 });
