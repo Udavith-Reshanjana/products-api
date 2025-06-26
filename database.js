@@ -8,7 +8,7 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
         console.error(err.message);
         throw err;
     } else {
-        console.log('Connected to the SQlite database.');
+        console.log('Connected to the SQLite database.');
 
         // Create products table
         db.run(`CREATE TABLE products (
@@ -55,17 +55,23 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
             }
         });
 
-        // ✅ Create customer table (REQUIRED for your assignment)
+        // Create customer table
         db.run(`CREATE TABLE customer (
             customerId INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
+            address TEXT NOT NULL,
             email TEXT NOT NULL UNIQUE,
-            creditCard TEXT NOT NULL
+            dateOfBirth TEXT NOT NULL,
+            gender TEXT NOT NULL,
+            age INTEGER NOT NULL,
+            cardHolderName TEXT NOT NULL,
+            cardNumber TEXT NOT NULL CHECK(LENGTH(cardNumber) = 12),
+            expiryDate TEXT NOT NULL,
+            cvv TEXT NOT NULL CHECK(LENGTH(cvv) = 3),
+            timeStamp TEXT NOT NULL
         )`, (err) => {
             if (!err) {
                 console.log("Customer table created.");
-                // Insert test row if needed
-                // db.run(`INSERT INTO customer (name, email, creditCard) VALUES (?, ?, ?)`, ["UR Student", "test@example.com", "123456789012"]);
             }
         });
     }
